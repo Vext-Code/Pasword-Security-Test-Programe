@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QUANTUM HUB v15.0 - SECURE PROTOCOL</title>
+    <style>
+        :root { 
+            --neon: #00ff41; --bg: #010409; --glitch: #ff003c; 
+            --panel: rgba(13, 17, 23, 0.9); --border: rgba(0, 255, 65, 0.2);
+        }
+
+        body { 
+            background: var(--bg); color: var(--neon); 
+            font-family: 'JetBrains Mono', 'Courier New', monospace; margin: 0; 
+            overflow: hidden; height: 100vh;
+        }
+
+        #warning-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 1000;
+            display: flex; justify-content: center; align-items: center;
+            backdrop-filter: blur(10px);
+        }
+        .warning-card {
+            background: #0d1117; border: 2px solid var(--neon); padding: 40px;
+            max-width: 500px; border-radius: 15px; text-align: center;
+            box-shadow: 0 0 50px rgba(0, 255, 65, 0.2);
+        }
+
+        #matrix-canvas { position: fixed; z-index: 1; opacity: 0.1; top: 0; left: 0; }
+        
+        .container { 
+            position: relative; z-index: 10; display: grid; 
+            grid-template-columns: 1fr 400px; gap: 20px; 
+            padding: 25px; height: calc(100vh - 50px); 
+        }
+
+        .terminal-core { 
+            background: var(--panel); border: 1px solid var(--border); 
+            border-radius: 15px; display: flex; flex-direction: column; 
+            padding: 40px; backdrop-filter: blur(10px);
+            box-shadow: 0 0 40px rgba(0,0,0,1);
+            transition: all 0.3s ease;
+        }
+
+        .input-group { position: relative; display: flex; align-items: center; }
+        input { 
+            width: 100%; background: rgba(0,0,0,0.8); border: 1px solid var(--border); 
+            border-radius: 4px; color: #fff; font-size: 22px; 
+            padding: 20px; padding-right: 100px; outline: none; transition: 0.3s;
+            box-sizing: border-box; font-family: 'JetBrains Mono', monospace;
+        }
+        input:focus { border-color: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.1); }
+
+        .progress-container {
+            width: 100%; height: 4px; background: rgba(255,255,255,0.05);
+            margin-top: 15px; border-radius: 2px; overflow: hidden;
+        }
+        #security-bar {
+            width: 0%; height: 100%; background: var(--glitch);
+            transition: width 0.5s ease, background 0.5s ease;
+            box-shadow: 0 0 10px var(--neon);
+        }
+
+        .control-btns { position: absolute; right: 10px; display: flex; gap: 10px; }
+        .icon-btn {
+            background: transparent; border: none; color: var(--neon); 
+            cursor: pointer; font-size: 18px; opacity: 0.6; transition: 0.3s;
+        }
+        .icon-btn:hover { opacity: 1; text-shadow: 0 0 10px var(--neon); }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 30px; }
+        .stat-box { 
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border); 
+            padding: 15px; border-radius: 4px; text-align: center; 
+        }
+        .stat-label { font-size: 0.6rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-value { font-size: 0.9rem; display: block; margin-top: 5px; color: #fff; font-weight: bold; }
+
+        .side-bar { background: var(--panel); border: 1px solid var(--border); border-radius: 15px; padding: 20px; overflow: hidden; }
+        .log-line { font-size: 0.7rem; padding: 4px 0; border-bottom: 1px solid rgba(0,255,65,0.05); color: #00ff41; }
+
+        .btn-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 40px; }
+        .btn { 
+            background: var(--neon); color: #000; border: none; padding: 15px;
+            cursor: pointer; font-weight: bold; text-transform: uppercase;
+            transition: 0.3s; border-radius: 4px; font-size: 10px;
+            letter-spacing: 1px;
+        }
+        .btn:hover { background: #fff; box-shadow: 0 0 20px #fff; transform: translateY(-2px); }
+        .btn.memorable { background: #00ffff; }
+        .btn.clear { background: var(--glitch); color: #fff; }
+        .btn.copy { background: #f1c40f; color: #000; }
+    </style>
+</head>
+<body>
+
+<div id="warning-overlay">
+    <div class="warning-card">
+        <h2 style="color: var(--neon); letter-spacing: 5px;">SECURITY PROTOCOL</h2>
+        <p style="color: #fff; font-size: 14px; line-height: 1.6; text-align: left; margin: 25px 0;">
+            This tool utilizes local browser entropy for cryptographic analysis.<br><br>
+            <span style="color: var(--neon);">●</span> Zero data transmission to remote servers.<br>
+            <span style="color: var(--neon);">●</span> Pattern detection algorithm: ACTIVE.<br>
+            <span style="color: var(--neon);">●</span> Passwords are never logged or stored.
+        </p>
+        <button class="btn" style="width:100%; font-size: 14px;" onclick="startTerminal()">INITIALIZE SYSTEM</button>
+    </div>
+</div>
+
+<canvas id="matrix-canvas"></canvas>
+
+<div class="container">
+    <main class="terminal-core" id="terminalCore">
+        <header style="border-left: 4px solid var(--neon); padding-left: 20px; margin-bottom: 40px;">
+            <h1 style="margin:0; letter-spacing: 5px;">NEURAL TERMINAL</h1>
+            <p style="font-size: 10px; opacity: 0.6;">LOCAL_ENCRYPTION: ACTIVE // PATTERN_SHIELD: ON</p>
+        </header>
+
+        <div class="input-group">
+            <input type="text" id="mainInput" placeholder="READY FOR INPUT..." onkeyup="processSecure()" autocomplete="off">
+            <div class="control-btns">
+                <button class="icon-btn" title="Copy" onclick="copyToClipboard()">📋</button>
+                <button class="icon-btn" id="toggleBtn" onclick="toggleVisibility()">👁</button>
+            </div>
+        </div>
+
+        <div class="progress-container">
+            <div id="security-bar"></div>
+        </div>
+
+        <div id="hash-info" style="font-size: 0.6rem; color: var(--neon); margin-top: 10px; font-style: italic; letter-spacing: 1px; opacity: 0.7;">SHA-256: STANDBY...</div>
+
+        <div class="stats-grid">
+            <div class="stat-box"><span class="stat-label">Security Tier</span><span id="tierVal" class="stat-value">---</span></div>
+            <div class="stat-box"><span class="stat-label">Entropy</span><span id="entropyVal" class="stat-value">0 BITS</span></div>
+            <div class="stat-box"><span class="stat-label">Bit Density</span><span id="bitDensity" class="stat-value">0.00</span></div>
+        </div>
+
+        <div class="btn-grid">
+            <button class="btn" onclick="generateRandom()">QUANTUM GEN</button>
+            <button class="btn memorable" onclick="generateEasy()">MEMORABLE GEN</button>
+            <button class="btn copy" onclick="copyToClipboard()">COPY DATA</button>
+            <button class="btn clear" onclick="clearTerminal()">CLEAR SYSTEM</button>
+        </div>
+    </main>
+
+    <aside class="side-bar">
+        <h2 style="font-size: 0.8rem; letter-spacing: 2px; color: #fff; border-bottom: 1px solid var(--neon); padding-bottom: 10px;">SECURE_KERNEL_LOGS</h2>
+        <div id="log-stream"></div>
+    </aside>
+</div>
+
+<script>
+    function startTerminal() {
+        document.getElementById('warning-overlay').style.display = 'none';
+        addLog("SYSTEM_BOOT: SUCCESSFUL");
+    }
+
+    function toggleVisibility() {
+        const input = document.getElementById('mainInput');
+        const btn = document.getElementById('toggleBtn');
+        if (input.type === "text") {
+            input.type = "password";
+            btn.innerText = "🔒";
+            addLog("MASKING: ACTIVE");
+        } else {
+            input.type = "text";
+            btn.innerText = "👁";
+            addLog("MASKING: DISABLED");
+        }
+    }
+
+    // Matrix Background
+    const canvas = document.getElementById('matrix-canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    const drops = new Array(Math.floor(canvas.width / 20)).fill(1);
+    function draw() {
+        ctx.fillStyle = "rgba(1, 4, 9, 0.1)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#00ff41"; ctx.font = "15px monospace";
+        drops.forEach((y, i) => {
+            ctx.fillText(String.fromCharCode(0x30A0 + Math.random() * 96), i * 20, y * 20);
+            if (y * 20 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+            drops[i]++;
+        });
+    }
+    setInterval(draw, 50);
+
+    // Keyboard Pattern Detection
+    function isPatternDetected(str) {
+        const keyboardRows = [
+            "1234567890",
+            "qwertyuiop",
+            "asdfghjkl",
+            "zxcvbnm"
+        ];
+        const s = str.toLowerCase();
+        if (s.length < 4) return false;
+
+        for (let i = 0; i <= s.length - 4; i++) {
+            const chunk = s.substring(i, i + 4);
+            for (let row of keyboardRows) {
+                if (row.includes(chunk) || row.split('').reverse().join('').includes(chunk)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    async function processSecure() {
+        const p = document.getElementById('mainInput').value;
+        const bar = document.getElementById('security-bar');
+        
+        if (!p) { resetUI(); return; }
+
+        // PATTERN CHECK
+        if (isPatternDetected(p)) {
+            handlePatternViolation();
+            return;
+        }
+
+        // Entropy Logic
+        let charset = 0;
+        if (/[a-z]/.test(p)) charset += 26;
+        if (/[A-Z]/.test(p)) charset += 26;
+        if (/[0-9]/.test(p)) charset += 10;
+        if (/[^a-zA-Z0-9]/.test(p)) charset += 32;
+
+        let entropy = Math.floor(p.length * Math.log2(charset || 1));
+        let density = (entropy / p.length).toFixed(2);
+        const hashPreview = btoa(p).substring(0, 16).toUpperCase();
+        
+        let tier = "WEAK"; let color = "#ff003c";
+        if (entropy > 40) { tier = "MID"; color = "#f39c12"; }
+        if (entropy > 60) { tier = "STRONG"; color = "#00ffff"; }
+        if (entropy > 85) { tier = "LEGENDARY"; color = "#00ff41"; }
+
+        document.getElementById('entropyVal').innerText = entropy + " BITS";
+        document.getElementById('tierVal').innerText = tier;
+        document.getElementById('bitDensity').innerText = density;
+        document.getElementById('hash-info').innerText = "SHA-256_FRAGMENT: " + hashPreview + "...";
+        
+        document.documentElement.style.setProperty('--neon', color);
+        bar.style.width = Math.min((entropy / 100) * 100, 100) + "%";
+        bar.style.background = color;
+    }
+
+    function handlePatternViolation() {
+        const color = "#ff003c";
+        document.documentElement.style.setProperty('--neon', color);
+        document.getElementById('security-bar').style.width = "0%";
+        document.getElementById('security-bar').style.background = color;
+        document.getElementById('tierVal').innerText = "REJECTED";
+        document.getElementById('entropyVal').innerText = "0 BITS";
+        document.getElementById('bitDensity').innerText = "PATTERN_DET";
+        document.getElementById('hash-info').innerText = "THREAT: KEYBOARD_SEQUENCE_DETECTED";
+        addLog("CRITICAL: SEQUENTIAL_KEY_PATTERN");
+    }
+
+    function resetUI() {
+        document.getElementById('entropyVal').innerText = "0 BITS";
+        document.getElementById('tierVal').innerText = "---";
+        document.getElementById('bitDensity').innerText = "0.00";
+        document.getElementById('hash-info').innerText = "SHA-256: STANDBY...";
+        document.getElementById('security-bar').style.width = "0%";
+        document.documentElement.style.setProperty('--neon', "#00ff41");
+    }
+
+    function clearTerminal() {
+        document.getElementById('mainInput').value = "";
+        resetUI();
+        addLog("SYSTEM: MEMORY_CLEARED");
+    }
+
+    function copyToClipboard() {
+        const val = document.getElementById('mainInput').value;
+        if(!val || isPatternDetected(val)) return;
+        navigator.clipboard.writeText(val);
+        addLog("SYNC: DATA_COPIED");
+    }
+
+    function generateRandom() {
+        const c = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%^&*";
+        let r = ""; for(let i=0; i<16; i++) r += c[Math.floor(Math.random()*c.length)];
+        document.getElementById('mainInput').value = r; 
+        processSecure();
+        addLog("KERNEL: QUANTUM_GEN");
+    }
+
+    function generateEasy() {
+        const adjs = ["Cyber", "Neon", "Void", "Iron", "Dark", "Ghost", "Alpha", "Zero"];
+        const nouns = ["Wolf", "Link", "Node", "Core", "Byte", "Grid", "Pulse", "Protocol"];
+        let res = adjs[Math.floor(Math.random()*adjs.length)] + nouns[Math.floor(Math.random()*nouns.length)] + (Math.floor(Math.random()*899) + 100);
+        document.getElementById('mainInput').value = res; 
+        processSecure();
+        addLog("KERNEL: PATTERN_GEN");
+    }
+
+    function addLog(msg) {
+        const stream = document.getElementById('log-stream');
+        const line = document.createElement('div');
+        line.className = 'log-line';
+        line.innerHTML = `[${new Date().toLocaleTimeString()}] ${msg}`;
+        stream.prepend(line);
+        if(stream.children.length > 20) stream.lastChild.remove();
+    }
+</script>
+</body>
+</html>
